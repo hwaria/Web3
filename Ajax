@@ -1,0 +1,85 @@
+생활코딩 – Ajax (Asynchronous Javascript And Xml)
+
+1.	수업소개
+-	Ajax: 리로드 없이 웹서버에게 정보를 요청해서 부분적으로 정보를 갱신해주는 기술
+-	예를 들어 검색창에 어떤 단어를 쳤을때 추천 검색어가 뜨는 기능: 단어 하나하나를 입력할 때마다 웹 브라우저는 ajax를 통해 서버와 통신
+-	2004년 구글이 처음 gmail을 공개하면서 ajax 기술을 사용
+-	Asynchronous Javascript And Xml: 필요한 정보만을 부분적으로 제공
+
+2.	수업의 목적
+-	Ajax를 배운 후에 무엇을 할 수 있나? 링크로 다른 웹 페이지에 갈 때마다 모든 정보를 다 요청해서 다시 받을 필요 없이 필요한 정보만을 다운로드 
+-	사용자 입장에서는 변경된 부분에만 집중할 수 있음: 사용성의 증대, 시간, 네트워크 자원 절감
+-	웹 페이지에서 html태그에 변경이 필요한 경우(리스트 아이템 추가 등) 단순한 변경임에도 불구하고 하나하나 수작업으로 변경해줘야함
+-	ajax 사용하면 바뀔 수 있는 부분과 바뀌지 않을 부분을 구분해서 바뀔 수 있는 부분은 ajax를 통해 서버로부터 동적으로 가져올거임: 필요한 정보는 파일을 따로 생성해서 관리
+-	각각의 페이지마다 모두가 html코드를 가지고 있을 필요 없음: 딱 필요한 정보만 가질 수 있음
+-	Single-page application: 하나의 페이지로 여러 정보들을 표현할 수 있는 애플리케이션
+
+3.	실습환경 준비
+4.	Fetch API: ajax를 구현하는 기술 중 하나로 기존의 방식에 비해서 더 유연하고 분명함
+-	Html파일들이 들어있는 폴더에 fetch.html 파일 생성 후 다음과 같이 씀
+	<input type="button" value="fetch" onclick="
+		fetch('css').then(function(response){
+			response.text().then(function(text) {
+				alert(text);
+			})
+		})
+	">
+-	‘fetch’파일을 클릭할 경우 네트워크탭에서 브라우저가 css파일을 다운로드받는 것을 확인할 수 있음: Css파일내의 내용이 경고창에 나옴
+-	Html파일내의 내용을 경고창에 띄우고 싶으면? Fetch(‘css’) 부분을 html로 바꿈
+-	모든 작업이 끝난 후에는 alert(text) 이 부분이 호출되고 text 부분에 서버가 응답한 데이터가 들어감
+-	웹 페이지의 내용을 바꾸고 싶으면 <article>태그 위에 추가한 후 
+Document.querySelector(‘article’).innerHTML = text;
+	Fetch 버튼 누르면 html태그 내용이 브라우저에 나타남
+-	일단은 이렇게 사용한다고 알고 후에 원리를 배우자
+
+5.	Fetch API – 요청과 응답
+-	Fetch(‘javascript’): 자바스크립트라는 파일을 응답해달라고 요청하는 것
+: “Fetch”는 인자로 전달된 데이터를 서버에게 요청하는 함수
+-	Then(~~~): 서버가 응답하는데 걸리는 시간동안 어떤 코드를 실행하고, 응답을 끝낸 후에 괄호 안에 들어있는 함수를 실행
+Function callbackme() {
+Console.log(‘response end’);
+}
+Fetch(‘html’).then(callbackme); // 응답이 끝나면 callbackme 함수를 실행시켜줘
+Console.log(1);
+Console.log(2);
+	1) Fetch를 통해  html파일 요청 
+2) 콘솔로그에 1,2 입력 후 응답이 끝나면, 
+3) 콜백미 함수(콘솔에 ‘response end’) 실행
+: 비동기적인 실행 – fetch 요청 후 응답이 이뤄지는 동안 다른 어떤 코드가 실행되는 것: 동시적/병렬적으로 코드가 실행
+*동기적인 실행- fetch 요청 후 응답이 종료될 때까지 다른 코드가 실행되지 않음 (순차적/직렬적으로 코드가 실행됨)
+
+5-2. Fetch API – response 객체
+-	4.에서 입력한 코드 다시 해석하기
+<input type="button" value="fetch" onclick="
+	fetch('css').then(function(response){
+		response.text().then(function(text) {
+				alert(text);
+		})
+		})
+">
+-	Then() 안에 익명함수 사용하고 있음: then 안에서 독점적으로 사용하는 함수기 때문에 굳이 이름이 필요하지 않음 
+-	Then에서 익명함수가 실행될때 ‘response’라고 하는 객체를 전달함 
+-	Console.log(response)해서 리스폰스 객체를 클릭해보면 속성 값 중 status: 200 : 응답이 성공했다는 뜻, 404: 파일이 없다는 뜻 -> if 조건문을 사용해서 (response.status === 404)일때 파일이 없다는 에러창을 띄울 수 도 있음
+-	정리하면, Response 객체는 fetch를 통해 요청했을때 웹서버가 응답한 결과를 담고 있는 것: 그 안의 속성값을 이용해서 서버와 어떤 상태로 통신이 이루어졌는지 알 수 있음
+
+6.	Ajax의 적용: fetch API 실전에 적용해보기
+-	Indext.html 페이지에서 각 링크 onclick 이벤트에 ajax fetch api를 가져와서 붙여넣음
+<li><a onclick=”
+	Fetch(‘html’).then(function(response){
+	  Response.text().then(function(text){
+	    Document.querySelector(‘article’).innerHTML = text;
+	})
+});”>HTML</a></li>
+	Html링크를 클릭하면 html파일내의 내용이 화면에 나타남
+: 동일하게 css, javasciprt 링크에도 fetch api 코드를 넣으면 각 링크 전환할 때마다 각 파일의 내용만 바뀌고 나머지는 그대로임 
+
+7.	초기 페이지 구현: fragment identifier를 이용한 초기 페이지 기능 구현
+-	이전단계에서 발생하는 장애들을 해결해보자
+1)	각 링크마다 밑줄이 없어짐
+2)	각 링크에 연결된 url주소가 없어짐
+-	해쉬: 북마크 기능. 식별하고 싶은 아이템에 id(id=”three”)값을 부여 – url: index.html#three -> 페이지가 리로드 되지 않고 아이디 값이 “three”인 곳으로 스크롤 이동: 이 부분을 조각, fragment / “#three”를 fragment identifier(조각 식별자)
+-	이런 해쉬값을 이용해서 ajax로 다른 페이지를 로드해서 시작되는 페이지를 설정할 수 있음
+-	해쉬값을 알아내는 방법: (location.hash) -> #three
+-	(location.hash.substr(1)) -> 앞의 해쉬 기호를 떼고 아이디값만 나옴 “three”
+
+7-2. 초기 페이지
