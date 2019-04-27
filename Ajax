@@ -2,15 +2,15 @@
 
 1.	수업소개
 -	Ajax: 리로드 없이 웹서버에게 정보를 요청해서 부분적으로 정보를 갱신해주는 기술
--	예를 들어 검색창에 어떤 단어를 쳤을때 추천 검색어가 뜨는 기능: 단어 하나하나를 입력할 때마다 웹 브라우저는 ajax를 통해 서버와 통신
+	예를 들어 검색창에 어떤 단어를 쳤을때 추천 검색어가 뜨는 기능: 단어 하나하나를 입력할 때마다 웹 브라우저는 ajax를 통해 서버와 통신
 -	2004년 구글이 처음 gmail을 공개하면서 ajax 기술을 사용
 -	Asynchronous Javascript And Xml: 필요한 정보만을 부분적으로 제공
 
 2.	수업의 목적
 -	Ajax를 배운 후에 무엇을 할 수 있나? 링크로 다른 웹 페이지에 갈 때마다 모든 정보를 다 요청해서 다시 받을 필요 없이 필요한 정보만을 다운로드 
--	사용자 입장에서는 변경된 부분에만 집중할 수 있음: 사용성의 증대, 시간, 네트워크 자원 절감
+: 사용자 입장에서는 변경된 부분에만 집중할 수 있음: 사용성의 증대, 시간, 네트워크 자원 절감
 -	웹 페이지에서 html태그에 변경이 필요한 경우(리스트 아이템 추가 등) 단순한 변경임에도 불구하고 하나하나 수작업으로 변경해줘야함
--	ajax 사용하면 바뀔 수 있는 부분과 바뀌지 않을 부분을 구분해서 바뀔 수 있는 부분은 ajax를 통해 서버로부터 동적으로 가져올거임: 필요한 정보는 파일을 따로 생성해서 관리
+: ajax 사용하면 바뀔 수 있는 부분과 바뀌지 않을 부분을 구분해서 바뀔 수 있는 부분은 ajax를 통해 서버로부터 동적으로 가져올거임: 필요한 정보는 파일을 따로 생성해서 관리
 -	각각의 페이지마다 모두가 html코드를 가지고 있을 필요 없음: 딱 필요한 정보만 가질 수 있음
 -	Single-page application: 하나의 페이지로 여러 정보들을 표현할 수 있는 애플리케이션
 
@@ -24,7 +24,7 @@
 			})
 		})
 	">
--	‘fetch’파일을 클릭할 경우 네트워크탭에서 브라우저가 css파일을 다운로드받는 것을 확인할 수 있음: Css파일내의 내용이 경고창에 나옴
+-	‘fetch’ 클릭하면 네트워크탭에서 브라우저가 css파일을 다운로드받는 것을 확인할 수 있음: Css파일내의 내용이 경고창에 나옴
 -	Html파일내의 내용을 경고창에 띄우고 싶으면? Fetch(‘css’) 부분을 html로 바꿈
 -	모든 작업이 끝난 후에는 alert(text) 이 부분이 호출되고 text 부분에 서버가 응답한 데이터가 들어감
 -	웹 페이지의 내용을 바꾸고 싶으면 <article>태그 위에 추가한 후 
@@ -42,7 +42,7 @@ Console.log(‘response end’);
 Fetch(‘html’).then(callbackme); // 응답이 끝나면 callbackme 함수를 실행시켜줘
 Console.log(1);
 Console.log(2);
-	1) Fetch를 통해  html파일 요청 
+1) Fetch를 통해  html파일 요청 
 2) 콘솔로그에 1,2 입력 후 응답이 끝나면, 
 3) 콜백미 함수(콘솔에 ‘response end’) 실행
 : 비동기적인 실행 – fetch 요청 후 응답이 이뤄지는 동안 다른 어떤 코드가 실행되는 것: 동시적/병렬적으로 코드가 실행
@@ -77,9 +77,72 @@ Console.log(2);
 -	이전단계에서 발생하는 장애들을 해결해보자
 1)	각 링크마다 밑줄이 없어짐
 2)	각 링크에 연결된 url주소가 없어짐
--	해쉬: 북마크 기능. 식별하고 싶은 아이템에 id(id=”three”)값을 부여 – url: index.html#three -> 페이지가 리로드 되지 않고 아이디 값이 “three”인 곳으로 스크롤 이동: 이 부분을 조각, fragment / “#three”를 fragment identifier(조각 식별자)
+-	해쉬: 페이지 안의 특정 부분으로 가고 싶을 때 사용. 북마크 기능. 식별하고 싶은 아이템에 id(id=”three”)값을 부여 – url: index.html#three -> 페이지가 리로드 되지 않고 아이디 값이 “three”인 곳으로 스크롤 이동: 이 부분을 조각, fragment / “#three”를 fragment identifier(조각 식별자)
+-	<a href=”#three”> a 링크를 통해서 바로 해당 요소로 갈수 있게 링크걸기
 -	이런 해쉬값을 이용해서 ajax로 다른 페이지를 로드해서 시작되는 페이지를 설정할 수 있음
--	해쉬값을 알아내는 방법: (location.hash) -> #three
--	(location.hash.substr(1)) -> 앞의 해쉬 기호를 떼고 아이디값만 나옴 “three”
+-	해쉬값을 알아내는 방법: console.log(location.hash) -> #three
+-	“#”부분을 떼려면?
+Console.log(location.hash.substr(1)) -> 앞의 해쉬 기호를 떼고 아이디값만 나옴 “three”
 
 7-2. 초기 페이지
+-	Html, css, js로 가는 각 링크마다 해쉬값을 부여 <li><a href=”#!html” onclick=”fetchPage(‘html’)>HTTML</a></li> 
+-	링크가 생기고, 클릭함에 따라 내용이 바뀌고 url에도 “~~index.html#해쉬값”
+-	링크를 공유해서 들어온 사용자가 같은 화면을 볼수 있도록 하게 하려면?
+If (location.hash){
+	fetchPage(location.hash.substr(2)); //해쉬값은 #!javascript와 같이 두 번째 인덱스부터 시작
+} else {
+	fetchPage(‘welcome’)’
+}
+	검색엔진 최적화가 잘 안 됨. 웹페이지는 그 내용을 백엔드에서 동적으로 가져오므로 검색엔진이 내용을 바로 가져올 수가 없음, 요새는 해쉬뱅(#!)을 잘 쓰지 않고 pjax라는 보완된 기술을 사용하는 추세
+
+8.	글 목록 ajax로 구현하기: 별로 안 중요한데 어려운 얘기지만 ajax를 마무리하기위해..
+-	Index.html에 결합되어 있는 데이터와 로직을 구분하여, 바뀔 수 있는 데이터들은 다 따로 파일로 분리 -> 데이터가 바꼈다고 앱을 바꿀 필요가 없어짐
+-	각 링크들이 모여있는 리스트는 바뀔 수 있는 값이므로 따로 “list”라는 파일을 만들어 그 목록을 따로 저장한 후, <script> 태그 내에 fetch태그를 넣어서 “list”파일에 있는 데이터를 “nav”란 아이디를 가진 ol태그에 넣도록 하기
+: fetch(‘list’).then(function(response){
+	Response.text().then(function(text){
+		Document.querySelector(‘#nav’).innerHTML = text;})
+})
+-	목록에 “ajax”를 추가할 경우 “list”파일에서 “ajax”를 위한 ajax a 링크를 하나 추가하기만 하면 손쉽게 목록에 아이템을 추가 가능하고 로직이 들어간 파일은 건드릴 필요가 없어 안전
+
+8-2. 글 목록 2: 리스트에 있는 중복되는 태그들을 없애기
+-	<li><a href=~~> 태그 등 중복되고 있음
+ 
+-	Html, css, javascript 등 딱 목록의 이름만 남기고 모든 태그들을 없애보자
+fetch(‘list’).then(function(response){
+	Response.text().then(function(text){
+	//리스트파일에서 우리가 없앨 태그 
+<li><a href=”#!html” onclick=”fetchPage(‘html’)>html</a></li>//
+		Document.querySelector(‘#nav’).innerHTML = text;})
+})
+
+-console.log(text) -> html, css, Javascript 
+위의 데이터를 하나씩 꺼내고 싶으면 “배열” 개념을 사용해서 반복문 쓰면 되겠다
+Var items = Text.split(‘,’) -> text의 문자열을 콤마를 기준으로 하나씩 쪼개서 배열로 만들어줌 
+	Console.log(items) -> [“html”, “css”, “javasciprt”]
+-	이를 이용해서 반복문만들기
+Var I = 0;
+Var tags = “ “
+While (i<items.length){
+	Var item = items[i];
+	Item = item.trim(); // 마지막에 추가됨
+	Var tag = ‘<li><a href=”#!’ + item +’” onclick=”fetchPage(\’’ + item + ‘\’)”>’ + item + ‘</a></li>’; // 우리가 없애려고 햇던 태그를 문자열 연산과 item변수로 해서 반복문내 실행코드로 작성
+	Tags = tags + tag;
+I = I + 1;
+}
+-	“Javascript” 끝에 줄바꿈이 생겨서 에러생김.. var item에서 불필요한 공백을 없애려면? Trim() 추가
+
+9.	Fetch API polyfill: fetch API를 지원하지 않는 브라우저에서도 이용하기
+-	원래는 XMLHttpRequest를 이용해서 ajax를 사용했었고 fetch는 최신 기술이기 때문에 지원하지 않는 웹브라우저가 있을 수 있음
+-	Polyfill: 깃허브링크에서 집파일을 다운로드 받은 후 fetch.js 파일을 인덱스파일에 연결해주기
+-	아님 CDN 통해서 코드 붙여 넣을수도 있음
+<script src=https://cdn.jsdelivr.net/npm/promise-polyfill@8.1/dist/polyfill.min.js></script>
+<script src=https://cdn.jsdelivr.net/npm/whatwg-fetch@3.0/dist/fetch.umd.min.js></script>
+
+10.	수업을 마치며
+-	Ajax를 이용해서 페이지의 전환 없이도 서버로부터 데이터를 부분적으로 가져와서 동적으로 페이지의 내용을 교체하는 것을 배웠다!
+-	페이지 단위에서 머물러 있던 웹은 문서에서 확장되어 본격적인 애플리케이션의 대열에 합류
+-	웹은 문서라는 토대 위에 애플리케이션이라는 동적이고 사용자친화적인 기능을 합친 것!
+-	앞으로 공부할 만한 것?
+1)	XML: 콤마만으로 데이터를 표현하는데 한계가 있음 정보를 더 잘 표현하기 위해 사용  / json은 경쟁자! XML보다 좀 더 간결함
+2)	Single page application (SPA): PJAX 웹페이지를 로드하지않고 부분적으로 데이터를 교체
+3)	Progressive web apps (PWA): SPA의 발전 형태. 오프라인에서도 동작하는 웹 애플리케이션
