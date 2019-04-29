@@ -1,0 +1,164 @@
+생활코딩 – React: 
+재사용 가능한 사용자 정의 태그(컴포넌트)를 만들기, single page application 구현하기
+
+1.	수업 소개
+-	클래스 기반의 객체지향 프로그래밍 스타일로 코드 작성할 거임
+-	페이스북에서 만든 자바스크립트 UI를 더 잘 만들기 위해 만든 UI 라이브러리
+-	복잡하고 긴 코드를 따로 파일로 빼서 사용자 정의 태그 (리액트에서는 “컴포넌트”라고 함)로 묶어서 정의 후 그것들을 index.html 파일로 연결시켜준다면 훨씬 더 가독성이 좋고 복잡하지 않은 html태그를 만들 수 있겠다
+-	그리고 위에서 만든 컴포넌트를 다른 웹페이지에서 다시 사용함으로써 코드의 재사용이 가능 
+: 코드 수정이 필요할때, 컴포넌트에서 수정시 컴포턴트가 사용된 모든 웹페이지에서 수정이 동시에 적용됨
+-	수업에서 다룰 내용
+1)	리액트를 사용하는 이유
+2)	리액트의 컴포넌트를 만드는 법
+3)	리액트와 불변(immutable)의 관계
+-	수업에서 다루지 않을 내용
+1)	데이터베이스
+2)	서버와 연동
+3)	redux
+
+2.	개발환경: 수업의 방향성과 개발환경을 마련 
+-	본질적인 것 세 가지를 배움
+1)	코딩: 개발환경을 세팅하고 어디에 코딩을 바꿔야 할지 살펴봄
+2)	실행: 작성한 것을 실행해서 결과를 봄
+3)	Deploy: 모든 작업이 끝난 후 최종적으로 소비자에게 제공
+
+2-2. 개발환경의 종류
+-	온라인 상에서 리액트 애플리케이션 구현 가능: codesandbox, codepen
+-	이미 만들어진 웹사이트에 부분적으로 리액트 기능을 추가
+-	리액트로 앱 개발: toolchain 리액트앱 개발을 위한 환경도구들이 자동으로 설정되어있는 기능, 그 중 “create react app” 사용 – npm을 사용해서 컴퓨터에 설치- 터미널 – npm 설치 – creare-react-app 설치
+
+2-3. create-react-app을 이용해서 개발환경 구축
+-	데스크탑 react-env 폴더 생성후 터미널에서 폴더로 이동 – 앱 설치
+-	Npx create-react-app은 일회용으로 설치 후 사용, 삭제까지 해줌 -> 항상 최신 버전으로 사용가능하므로 실무에서 자주 사용하나봄
+
+2-4. 샘플 웹앱 실행: 코딩
+-	아이디가 루트인 div태그 안에다 코드 쓰기
+<div id="root"></div>
+-	루트 안에 들어가는 컴포넌트들은 ‘src’라는 디렉토리 안의 파일에서 생성
+-	Index.js파일에서 document.getElementById(‘root’)를 통해 코드 실행
+-	ReactDOM. Render(<App />: App.jsv파일에서 작성된 사용자 정의태그 
+: className=”App”안의 코드를 지우고 안에 우리가 쓰고 싶은 코드를 작성하면 웹브라우저를 자동으로 리로드해줌 **return 다음에는 꼭 하나의 태그 안쪽에 나머지 태그들이 있어야함 
+
+2-5. CSS 코딩하는 법
+-	Index.js에서 css파일 연결하기: import ‘./index.css’
+
+2-6. 배포하는 법(deploy)
+-	React create react app파일(개발환경에 있는 파일)은 무게가 무거움 – 여러가지 기능이 추가되어있거든
+-	Npm run build -> “build”라는 디렉토리가 생김. 그 안에 Index.html은 create react app이 실제 프로덕션 환경에서 사용되는 앱을 만들기 위해서 불필요한 공백 등을 모두 없앤 파일. 용량이 작음
+: 실제로 서비스 할 때는 “build” 폴더 내 파일을 사용
+-	명령 serve: npm을 통해 설치할 수 있는 간단한 웹서버 ‘serve’  
+-	Npx serve -s build (서브를 설치한 후 실행 시 build 디렉토리를 루트로 하겠다는 뜻 -> 주소를 알려줌
+
+3.	컴포넌트 제작: react의 핵심 기능인 컴포넌트 제작 방법 배우기
+-	리액트가 없으면 어떤 상황일까? 리액트를 쓰지 않는 순수 html파일 만들어보기
+: semantic 태그 사용- htlm5에 새로 추가된 기능, 기능상의 변화는 없으나 의미를 명확히 전달 위해 사용
+
+3-2. 컴포넌트 만들기 1
+-	컴포넌트를 만드는 태그(템플릿)
+Class App extends Component {
+	Render() {
+		Return (
+			<div className=”App”>
+				Hello, React!!
+			</div>
+		);
+}
+: 리액트가 가지고 있는 클래스 “컴포넌트”를 상속받아서 App이라는 새로운 클래스를 만들고, 그것은 render라는 메소드를 가지고 있다
+-	“Subject”라는 이름의 클래스만들어보기: 이 것은 유사자바스크립트 -> create react app이 js코드로 변경해줌
+Class Subject extends Component {. // 클래스의 이름 첫 글자는 대문여야함
+Render () {
+  Return (
+<header>  // 컴포넌트를 만들 때는 컴퍼넌트는 반드시 하나의 최상위 태그로 시작해야함 여기서는 헤더태그 
+  <h1>WEB</h1>
+  	  World wide web!
+</header>.        // 우리가 떼어내고 싶은 긴 헤더태그 붙여넣기
+    );
+}
+}
+: App.js파일에서 <div className =”App”>	 내에 위에서 정의한 “Subject”클래스 넣어줌: <Subject></Subject> 
+
+: 리액트는 웹브라우저가 알아들을 수 있는 Subject코드를 <header>코드로 변환해서 바꿔줌
+
+3-3. 컴포넌트 만들기 2
+-	<Nav>태그를 컴포넌트화하기
+Class TOC extends Component {
+Render() {
+	Return (
+		<nav>
+      <ul>
+        <li><a href="1.html">HTML</a></li>
+        <li><a href="2.html">CSS</a></li>
+        <li><a href="3.html">JavaScript</a></li>
+      </ul>
+   		 </nav>
+	);
+}
+: App.js파일에서 <div className =”App”>	내 3-2에서 붙인 <Subject></Subject> 코드 밑에 <TOC></TOC> 
+: 마찬가지로 <Article>태그도 “Content”클래스로 만들어서 위의 코드 밑에 붙임
+-	복잡한 html코드를 정리해서 컴포넌트화하여 컴포넌트의 이름에만 집중할 수 있도록 하여 복잡성을 획기적으로 낮춤
+
+class App extends Component {
+  render() {
+    return (
+      <div className="App">
+        <Subject></Subject>
+        <TOC></TOC>
+        <Content></Content>
+      </div>
+    );
+}
+
+3-4. props (properties): 
+-	위에서 정의한 <Subject>~<Content> 컴포넌트를 다른 웹페이지에서도 사용, 혹은 패키지로 만들어서 인터넷에 업로드하면 다른 사람이 이것들을 사용할 수 도 있음
+-	태그를 사용시 항상 똑같은 결과만 나오는 것이 아쉽다? 태그의 이름과 속성 특성을 사용해서 태그를 사용자화하기
+class App extends Component {
+  render() {
+    return (
+      <div className="App">
+        <Subject title=”WEB” sub=”world wide web!”></Subject> // 속성값 부여하기
+	<TOC></TOC>
+	<Content></Content>
+</div>
+**공식문서에서 발췌
+How to define a component:
+Class Welcome extends React.Component {
+Render () {
+Return <h1> Hello, {this.props.name}.</h1>;
+}
+}
+: 이것을 참고해서 전에 정의한 “Subject” 클래스 수정해보기
+class Subject extends Component {
+  render() {
+    return (
+      <header>
+        <h1>WEB  {this.props.title}</h1>
+        world wide web! {this.props.sub}
+      </header>
+    );
+  }
+}
+: 이렇게 하면 “Subject”태그를 쓸 때 title값과 sub값만 바꿔주면 바뀐 내용으로 코드가 웹브라우저에 표현됨
+-	<Content>도 바꿔보기: <Content title=”HTML” desc=”HTML is HyperText Markup Language.”></Content>
+Class Content extends Component{
+Render () {
+  Return (
+<article>
+	<h2>{this.props.title}</h2>
+	{this.props.desc}
+</article>
+)
+}
+}
+	똑같이 동작하지만 속성값을 사용하여 다른 결과를 만들어낼 수 있게 됐따!
+
+3-5. React Developer Tools: 리액트의 컴포넌트를 쉽게 탐색할 수 있도록 돕는 도구
+-	리액트 공홈 – Community – Tools: 리액트 개발에 필요한 여러가지 도구들이 정리 – Debugging: 현재 리액트로 만들어진 앱의 상태를 확인할 수 있음 – chrome: React Developers Tools 설치
+-	개발자도구 – 검사 – elements – 리액트상의 컴포넌트를 확인하고 싶으면 맨 마지막 탭 “React” 클릭하면
+<App>
+ <div className=”App”>
+   <Subject> … 우리가 위에서 작성했던 리액트 클래스 등 확인 가능 
+
+3-6. Component 파일로 분리하기
+-	지금 App.js 파일에 우리가 정의한 4개의 컴포넌트가 있는데 이게 늘어서 엄청 많아지면? 
+: 각각의 컴포넌트별로 별도의 파일로 쪼개보기
+-	“components”라는 폴더를 만들고 컴포넌트별로 파일 만듦 “TOC.js” – App.js파일에 있는 class TOC정의 태그를 만든 새 파일로 옮기고 import React, { Component} from ‘react’; 태그도 맨 상단에 붙여줌: 리액트라고 하는 라이러리에서 컴포넌트라는 클래스를 사용하기위해 설정하는 것! – 맨 밑에 “TOC”태그에서 어떤 변수나 함수를 외부에서 사용하게 할 것인지 지정 export default TOC; : TOC라는 클래스를 도입해서 사용 가능 – App.js 파일에서 TOC클래스를 가져올 수 있도록 import TOC from “./components/TOC” 연결시켜줌
