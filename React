@@ -36,7 +36,7 @@
 <div id="root"></div>
 -	루트 안에 들어가는 컴포넌트들은 ‘src’라는 디렉토리 안의 파일에서 생성
 -	Index.js파일에서 document.getElementById(‘root’)를 통해 코드 실행
--	ReactDOM. Render(<App />: App.jsv파일에서 작성된 사용자 정의태그 
+-	ReactDOM. Render(<App />: App.js파일에서 작성된 사용자 정의태그 
 : className=”App”안의 코드를 지우고 안에 우리가 쓰고 싶은 코드를 작성하면 웹브라우저를 자동으로 리로드해줌 **return 다음에는 꼭 하나의 태그 안쪽에 나머지 태그들이 있어야함 
 
 2-5. CSS 코딩하는 법
@@ -153,7 +153,7 @@ Render () {
 
 3-5. React Developer Tools: 리액트의 컴포넌트를 쉽게 탐색할 수 있도록 돕는 도구
 -	리액트 공홈 – Community – Tools: 리액트 개발에 필요한 여러가지 도구들이 정리 – Debugging: 현재 리액트로 만들어진 앱의 상태를 확인할 수 있음 – chrome: React Developers Tools 설치
--	개발자도구 – 검사 – elements – 리액트상의 컴포넌트를 확인하고 싶으면 맨 마지막 탭 “React” 클릭하면
+-	개발자도구 – 검사 – elements – 리액트 상의 컴포넌트를 확인하고 싶으면 맨 마지막 탭 “React” 클릭하면
 <App>
  <div className=”App”>
    <Subject> … 우리가 위에서 작성했던 리액트 클래스 등 확인 가능 
@@ -161,4 +161,113 @@ Render () {
 3-6. Component 파일로 분리하기
 -	지금 App.js 파일에 우리가 정의한 4개의 컴포넌트가 있는데 이게 늘어서 엄청 많아지면? 
 : 각각의 컴포넌트별로 별도의 파일로 쪼개보기
--	“components”라는 폴더를 만들고 컴포넌트별로 파일 만듦 “TOC.js” – App.js파일에 있는 class TOC정의 태그를 만든 새 파일로 옮기고 import React, { Component} from ‘react’; 태그도 맨 상단에 붙여줌: 리액트라고 하는 라이러리에서 컴포넌트라는 클래스를 사용하기위해 설정하는 것! – 맨 밑에 “TOC”태그에서 어떤 변수나 함수를 외부에서 사용하게 할 것인지 지정 export default TOC; : TOC라는 클래스를 도입해서 사용 가능 – App.js 파일에서 TOC클래스를 가져올 수 있도록 import TOC from “./components/TOC” 연결시켜줌
+-	“components”라는 폴더를 만들고 컴포넌트별로 파일 만듦 “TOC.js” – App.js파일에 있는 class TOC정의 태그를 만든 새 파일로 옮기고 import React, { Component} from ‘react’; 태그도 맨 상단에 붙여줌: 리액트라고 하는 라이러리에서 컴포넌트라는 클래스를 사용하기위해 설정하는 것! – 맨 밑에 “TOC”태그에서 어떤 변수나 함수를 외부에서 사용하게 할 것인지 지정 export default TOC; : TOC라는 클래스를 도입해서 사용 가능 – App.js 파일에서 TOC클래스를 가져올 수 있도록 import TOC from “./components/TOC” 연결시켜 줌
+
+4.	State
+-	리액트는 컴포넌트를 외부에서 조작할 때는 props를, 내부적으로 상태를 관리할 때는 state를 사용
+-	사용자의 입장과 그것을 구현하는 사람의 입장이 있음
+: 사용자의 입장에서는 버튼, 화면 터치와 같은 유저 인터페이스를 통해 장치를 조작: props와 유사
+: 내부적인 구현을 위해 필요한 내부적 조작 장치, 메커니즘이 필요: state와 유사, props값에 따라서 내부의 구현에 필요한 것
+-	Component를 만들고, 기본적인 동작을 바꾸고 싶을 때 사용자에게 제공하는 props라는 문법을 사용, 컴포넌트를 조작 – 사용자는 알 필요 없는 컴포넌트 내부적으로 사용되는 것들은 State
+=> 컴포넌트가 좋은 부품이 되기 위해서는 컴포넌트를 사용하는 props와, 컴포넌트를 실제로 구현하는 내부의 state가 철저히 분리되어 있어야함
+- 복잡하고 다양한 일들을 하는 컴포넌트를 만들 때 필수 요소인 State를 배워보자!
+
+4-2. State 사용
+class App extends Component {
+  render() {
+    return (
+      <div className="App">
+        <Subject title=”WEB” sub=”world wide web!”></Subject>
+        <TOC></TOC>
+        <Content title=”HTML” desc=”HTML is HyperText Markup Language.”></Content>
+      </div>
+    );
+}
+-	App이라는 상위 컴포넌트에 “Subject”라는 하위 컴포넌트가 있음. 그런데 하위 컴포넌트의 props값들이 하드코딩 되어있는 것이 보기 싫음 -> 이것들을 state값으로 만들고 그 값을 서브젝트에 props로 전달해서 개선해보자
+
+class App extends Component {
+constructor(props){  // state값을 초기화하기 위해 작성: 초기화해서 props로 들어가는 값을 세팅하려고
+super(props); // 어떤 컴포넌트가 실행될 때, render함수보다 먼저 실행되어 컴포넌트를 초기화 시켜주고 싶은 코드는 constructor 안에 넣음!
+This.state = {
+Subject: { title: “WEB”, sub: “World Wide Web”} // Subject의 값을 state화하는 코드
+} 
+}
+  render() {
+    return (
+      <div className="App">
+        <Subject 
+title= {WEB this.state.subject.title}  
+sub= {”world wide web! This.state.subject.sub}>
+</Subject>
+        <TOC></TOC>
+        <Content title=”HTML” desc=”HTML is HyperText Markup Language.”></Content>
+      </div>
+    );
+}
+: app.js파일을 사용하고 있는 indext.js 파일에서는 “ReactDOM..render<App />”이라는, 컴포넌트를 사용하는 코드는 보이지만 이 것이 state값인 subject라는 것이 있는지는 알 수 없음 (안에 전선이 잘 정리된 휴대폰같이!)
+: App (상위 컴포넌트)의 state를 하위컴포넌트인 subject의 props값으로 전달하였음 
+
+4-3. key
+-	복수의 엘리먼트를 생성할 때는 key라는 특수한 props를 사용
+-	TOC 안에 있는 데이터를 app의 내부 state로 설정하여 toc에 자동으로 들어가게 만들기
+class App extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      subject: {title:'WEB', sub:'World Wid Web!'}
+      contents: [ // toc 목록 안의 데이터가 여러 개이므로 대괄호를 사용하여 배열 생성
+{id: 1, title: ’HTML’, desc: ’HTML is for information’ }, // 배열의 첫 번째 값 객체, id값 부여
+{id: 2, title: ’CSS’, desc: ’CSS is for design’ },
+	{id: 3, title: ’JavaScript, desc: ’JavaScript is for interactive web’ },
+]   
+    }
+  }
+  render() {
+    return (
+      <div className="App">
+        <Subject title="WEB" sub="world wide web!"></Subject>
+        <Subject 
+          title= {this.state.subject.title} 
+          sub= {this.state.subject.sub}></Subject>
+        <TOC data= {this.state.contents}></TOC>
+        <Content title="HTML" desc="HTML is HyperText Markup Language."></Content>
+      </div>
+
+	이제 TOC.js 파일에서 TOC 클래스 정의 코드 수정
+Class TOC extends Component {
+Render() {
+	Var lists = [ ];
+	Var data = This.props.data; // toc가 내부적으로 가지고 있는 값
+	Var I = 0;
+	While (I < data.length) { // props 데이터값만큼 반복
+    Lists.push(<li key={data[i].id}><a href={"/content/" + data[i].id}> {data[i].title} </a></li>); // <li>태그 안 내용을 배열로 넣음
+I = I + 1;
+} // 여러개의 엘리먼트를 자동으로 생성하는 경우 콘솔창에서 에러가 뜸: key라는 props를 사용해라! -> <li>태그에 Key값 줌
+	Return (
+		<nav>
+      <ul>
+        <li><a href="1.html">HTML</a></li>
+        <li><a href="2.html">CSS</a></li>
+        <li><a href="3.html">JavaScript</a></li>
+	    {lists}
+      </ul>
+   		 </nav>
+	);
+}
+: 부모인 App의 입장에서는 State라고 하는 내부정보를 사용, 그것을 자식요소(subject, TOC)에 전달할때는 props ( {this.state.subject.title} )를 이용하여 전달 – 따라서 App에서는 토픽이 내부적으로 어떻게 돌아가는지 알 필요가 없고, TOC data로 어떤 형태의 정보를 전달하면 되는가, 즉 사용자의 입장에서 알아야 할 것만 알면 됨
+
+5.	이벤트
+-	사용자와 상호작용하는 애플리케이션의 핵심인 이벤트를 리액트에서 구현하기
+-	이벤트, State, Props 같이 상호작용해서 애플리케이션의 역동성을 만듦
+-	각각의 링크에 이벤트 걸기 -> 클릭하면 app 컴포넌트의 state의 바뀌고, 바뀐 값이 컴퍼넌트의 props값으로 전달되게 해야함
+-	우리가 보는 페이지가 웰컴 페이지인지 읽기 페이지인지 구분위해 state에 mode라는 값주기
+This.state {
+      mode:'welcome',
+      subject: {title:'WEB', sub:'World Wid Web!'},
+      welcome: {title:'Welcome', desc:'Hello, React!!'}, // 
+      contents: [
+        {id:1, title:'HTML', desc:'HTML is for information'},
+        	{id:2, title:'CSS', desc:'CSS is for design'},
+		}}
+
+-	리액트에서는 props값이나 state값이 바뀌면 그 값을 가지고있는 컴포넌트의 렌더함수가 다시 호출됨 -> 화면이 다시 그려짐 -> 모드에 따라 조건문 달기
