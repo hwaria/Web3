@@ -240,7 +240,8 @@ Render() {
 	Var data = This.props.data; // toc가 내부적으로 가지고 있는 값
 	Var I = 0;
 	While (I < data.length) { // props 데이터값만큼 반복
-    Lists.push(<li key={data[i].id}><a href={"/content/" + data[i].id}> {data[i].title} </a></li>); // <li>태그 안 내용을 배열로 넣음 ???content는 어디서 나오는거임?
+    Lists.push(<li key={data[i].id}><a href={"/content/" + data[i].id}> {data[i].title} </a></li>); // <li>태그 안 내용을 배열로 넣음 ???content는 어디서 나오는거임? // <a href={data[i].id+".html"}> 대체 가능
+
 I = I + 1;
 } // 각각의 리스트의 항목들을 자동으로 생성하는 경우 콘솔창에서 에러가 뜸: key라는 props를 사용해라! -> <li>태그에 Key값 줌
 	Return (
@@ -380,4 +381,239 @@ Mode: ‘welcome’
 }
 -	이벤트의 소비자가 아닌 생성자가 되엇다.. 
 
+5-7. 컴포넌트 이벤트 만들기 2
+-	이전 시간에 onchangepage라는 이벤트를 생성하여 사용자에 제공 
+-	이번에는 글 목록을 클릭했을 때 app 컴포넌트의 mode를 ‘read’로 바꾸고 클릭한 것에 해당하는 컨텐트가 본문에 나오도록 하기
+:일단 app.js파일의 toc에 onChangePage라는 이벤트를 props로 전달 후, TOC파일에서 a태그에 함수를 호출하는 코드 추가 
 
+-	App.js
+<TOC
+          onChangePage={function() {
+           this.setState({mode: ‘read’})// 모드를 바꾸는 이벤트 함수
+          }.bind(this)}
+          data={this.state.contents}
+        />
+
+-	Toc.js
+while (i < data.length) {
+      lists.push(
+        <li key={data[i].id}>
+          <a
+            href={"/content/" + data[i].id}
+            onClick={function(e) {
+              e.preventDefault();
+              this.props.onChangePage();
+            }.bind(this)}
+          >
+            {data[i].title}
+          </a>
+        </li>
+      );
+      i = i + 1;
+    }
+
+5-8. 컴포넌트 이벤트 만들기 3
+-	이제 각각의 링크 누르면 해당되는 컨텐츠 나오게 하기
+-	App의 state에 ‘selected content id’라는 값을 줘서 현재 활성화된 컨텐트를 화면에 표시 
+1)	State값 추가 
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      mode: "welcome",
+      selected_content_id: 2,
+      subject: { title: "WEB", sub: "World Wide Web" },
+      welcome: { title: "Welcome", desc: "Hello, React!!" },
+      contents: [
+        { id: 1, title: "HTML", desc: "HTML is for information" },
+        { id: 2, title: "CSS", desc: "HTML is for design" },
+        { id: 3, title: "JavaScript", desc: "HTML is for interactive" }
+      ]
+    };
+}
+2)	모드가 ‘read’일 때 “contents”state의 id값과 “selected_content_id”값과 일치하는지 확인 후 화면에 보일 _title, _desc 알맞게 보여주게 하기
+
+} else if (this.state.mode === "read") {
+      var i = 0;
+      while (i < this.state.contents.length) { // 컨텐츠 state의 항목 수만큼 반복문 실행
+        var data = this.state.contents[i];  // 현재 순번에 해당하는 컨텐츠
+        if (data.id === this.state.selected_content_id) { // 데이터의 id값과 selected content id값과 일치한다면
+          _title = data.title;
+          _desc = data.desc;
+          break; // 일치하는 id값을 찾은 경우 반복문 더 이상 실행될 필요 없으므로
+        }
+        i = i + 1;
+      }
+    }
+3)	TOC에서 onChangePage 이벤트가 발생됐을 때 (a링크가 클릭되었을 때) ‘Selected_content_id’값을 바꿔줘야함
+: toc.js파일에서 onClick 이벤트에 파라미터로 매개변수로 전달된 이벤트 객체 ‘e’의 ‘dataset.id’ 값 (e.target.dataset.id)을 사용
+<a
+            href={"/content/" + data[i].id}
+            data-id={data[i].id} // 이벤트를 실행시킨 객체의 속성값을 활용 (data-id)로 Dataset에 접근 가능
+            onClick={function(e) {
+e.preventDefault();
+             	this.props.onChangePage(e.target.dataset.id);
+            }.bind(this)}
+          >
+            {data[i].title}
+          </a>
+
+App.js에서 onchangepage 이벤트 함수에 id값을 매개변수로 전달 후 “selected_content_id”값 바꾸기
+<TOC
+          onChangePage={function(id) { // id값 매개변수로 전달
+            this.setState({
+              mode: "read",
+              selected_content_id: Number(id) // data-id로 들어오는 id값은 문자형이므로 숫자형으로 바꿔줌
+            });
+          }.bind(this)}
+          data={this.state.contents}
+        />
+: 이제 web을 클릭하면 ‘welcome’모드로 되고, 각각의 페이지를 클릭하면 모드가 ‘read’로 그리고 해당되는 컨텐츠가 나옴 
+
+6.	Create 기능 구현: 베이스 캠프
+-	이때까지 만든 거 감상해보기: 페이지가 바뀌지 않고 컨텐츠가 역동적으로 바뀌는 웹사이트를 만들었음
+-	개념 정리해보기
+1) Props vs State
+-  props are read-only & state can be modified using this.setState
+: App.js에서 Content를 사용하는 입장에서는 title props를 통해 값을 바꿀 수 있지만, Content.js에서 content 컴포넌트에 전달된 title props을 바꿀 수는 없음,  둘 다 render 함수 호출을 유발하므로 Props나 state를 수정하며 UI를 바꿀 수 있음
+-	상위 컴포넌트가 하위 컴포넌트로 값을 전달할 때는 Props를 통해서, 하위 컴포넌트가 상위 컴포넌트의 값을 바꾸고 싶을 때는 이벤트를 통해서 상위컴포넌트의 state를 변경!
+-	Redux: 하나의 데이터 저장소가 있어서 데이터 저장소의 값이 바뀌면 그 값과 관련된 모든 컴포넌트가 변경됨 
+-	앞으로 현실 애플리케이션 구현: 이때까지 만든 것은 읽기 기능만 됨. 앞으로 리액트를 이용해서 동적으로 데이터를 수정, 추가 등 할 것
+
+6-2. Create 구현: 소개
+-	정보 기술은 CRUD에 있따, CR이 핵심적인 오퍼레이션
+C: create, 애플리케이션의 데이터를 생성할 것인가?
+R: read
+U: Update
+D: Delete
+-	앞으로 할 것: TOC와 Contents 사이에 생성, 수정, 삭제 버튼을 만들 것 -> 생성 버튼을 누르면 App의 모드가 “Create”로 바뀌고, <Content> 컴포넌트가 글을 추가할 때 쓰는 컴포넌트 “Create Content”로 바뀌고, 이 컴포넌트는 폼을 저장해서 폼의 정보를 입력해서 저장하면 컨텐츠의 목록에 새로운 정보가 추가될 것임  
+-	폼 내부에는 글을 작성한 후 “Submit”버튼을 누르면 이벤트가 발생되서 App컴포넌트의 기존의 컨텐츠 배열 끝에 새로운 정보 추가되고 TOC에도 항목 추가됨
+-	TOC의 링크를 클릭하면 다시 모드가 “read”로 바뀌고 “Read content”로 컴포넌트 변경됨
+
+6-3. Create 구현: mode 변경
+-	TOC 밑에 Create, Update, Delete 버튼 추가
+<ul>
+          <li><a href="/create">create</a></li>
+          <li><a href="/update">update</a></li>
+          <li><input type="button" value="delete"></input></li> // 삭제 기능의 버튼은 a링크가 아닌 input 타입을 써야함
+</ul>
+-	위 태그를 control.js 라는 새 파일에다 뺀 후 app.js파일에 연결 -> Control 컴포넌트에 onchangemode 함수를 정의해서 li태그가 클릭되었을때 이벤트 실행하도록 만듦
+<Control
+          onChangeMode={function(_mode) { // 각 링크가 클릭될 때 인자로 받은 _mode가 변수로 전달됨
+            console.log(this.state.mode);
+            this.setState({
+              mode: _mode
+            });
+          }.bind(this)}
+        />
+-	각 li태그가 클릭 되었을 때 그에 해당되는 모드를 바꿔줄 수 있도록 설정
+
+ 
+-	이제 모드가 알맞게 바뀌니 모드에 따라서 content가 표시되는 영역의 컴포넌트가 바뀌도록 해보자
+
+6-4. mode 전환 기능
+-	Create를 클릭했을 때 Create모드에서 사용될 Content컴포넌트를 “create content”로 바뀌게 하기 
+-	기존의 컴포넌트 이름이였던 <Content>를 “ReadContent”로 이름 변경 후 연결된 파일에서도 이름 다 변경해주기 -> CreateContent 파일 따로 생성 후 안에 Form태그 추가, App.js 파일에 import 시켜줌 
+-	Create모드가 되면 readcontent를 createcontent로 교체하는 코드 추가하기
+: readcontent 영역이 가변적으로 바뀔 수 있게 하기 위해서 {_article} 변수로 만든 후 모드 조건문에서 모드에 따라 가변적으로 나타날 수 있도록 추가 -> create모드일때는 CreateContent가 나올 수 있도록 조건문에 추가
+render() {
+    // console.log("App render");
+    var _title,
+      _desc, _article = null; //기본적으로 없는 값
+    if (this.state.mode === "welcome") {
+      _title = this.state.welcome.title;
+      _desc = this.state.welcome.desc;
+      _article = <ReadContent title ={_title} desc={_desc} /> //이 영역을 가변적으로 만들기 위해 변수로 만들어 저장
+    } else if (this.state.mode === "read") {
+      var i = 0;
+      while (i < this.state.contents.length) {
+        var data = this.state.contents[i]; // 현재 순번에 해당하는 컨텐츠
+        if (data.id === this.state.selected_content_id) {
+          _title = data.title;
+          _desc = data.desc;
+          break;
+        }
+        i = i + 1;
+      }
+      _article = <ReadContent title ={_title} desc={_desc} /> // 모드가 웰컴이거나 리드면 있는 그대로 나옴
+    } else if (this.state.mode === 'create') { //create 모드에서 article 내용 바뀜
+      _article = <CreateContent />
+    }
+
+-	이제 createcontent의 form영역 구현해보쟈~~
+
+6-5. Create 구현: form
+-	Form 태그는 입력한 정보를 어디에 전송할 것인지를 action내에 정의, 사용자가 정보를 추가할 때는 method를 ‘post’방식 사용
+-	Form에서 submit버튼이 클릭되엇을때 onsubmit이라는 이벤트를 추가해서 정보가 전송되도록 정의
+<form action="/create_process" method="post"
+          onSubmit={function(e) {
+            e.preventDefault(); // 페이지 전환 안 되도록!
+            alert("Submit!!");
+          }.bind(this)}
+        >
+          <p>input type="text" name="title" placeholder="title" /></p>
+          <p><textarea name="desc" placeholder="description" /></p> //여러 줄의 텍스트를 입력 시 textarea 사용 
+          <p><input type="submit" /></p>
+ </form>
+-	페이지전환없이 경고창 잘 뜸! 
+-	이제는 app이라는 컴포넌트에 contents 끝에 사용자가 입력한 정보 추가시키기 – 글 목록 자동으로 변경되게 하기
+
+6-6. Create 구현: onSubmit 이벤트 
+-	Submit 버튼이 클릭되었을 때 createcontent의 이벤트로 설치된 함수를 실행시켜야함
+else if (this.state.mode === "create") {
+      _article = <CreateContent onSubmit={function(_title, _desc){
+        // setState를 통해서 App에 새로운 컨텐츠 값을 추가하는 코드
+        console.log(_title, _desc); // 밑에서 전달해 준 인자가 제대로 나오는지 확인
+      }.bind(this)} />;
+    }
+
+-	CreateContent에서 onsubmit함수를 호출하고 첫 번째 인자에는 title, 두 번째인자에는 desc을 줄 수 있어야함 (Form의 value값 가져오기) 
+: e 이벤트 객체 -> target (Form 자체) -> title, value -> e.target.title.value & e.target.desc.value
+onSubmit={function(e) {
+            e.preventDefault(); // 페이지 전환 안 되도록!
+            debugger;
+            this.props.onSubmit(e.target.title.value, e.target.desc.value);
+          }.bind(this)}
+        >
+- 이제 title, description 값을 잘 받아올 수 있게 되었으니 이 것들을 App의 컨텐츠 끝에 추가해주자~
+
+6-7. Create 구현: Content 변경
+-	Contents의 끝에 데이터를 추가해야되니까 기존에 있던 데이터의 id값을 쭉 읽어서 1 더 큰 id 값을 만들어야 함 -> 변수로 저장해두자 
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.max_content_id = 3; // contents 마지막 요소 id값 저장해두기
+    this.state = {
+-	State 통해서 컨텐츠 값 추가 
+else if (this.state.mode === "create") {
+      _article = <CreateContent onSubmit={function(_title, _desc){
+        // state를 통해서 새로운 컨텐츠 값을 추가하기
+        this.max_content_id = this.max_content_id + 1; // 컨텐츠의 마지막 요소보다 id값 1 더 큼
+        this.state.contents.push(
+{id: this.max_content_id, title: _title, desc: _desc}); // 항목 추가하기
+        this.setState({ // 조건문에서만state 변경시 모름.. setState써서 컨텐츠가 수정되었음을 알림 
+          contents: this.state.contents
+        });
+        console.log(_title, _desc);
+      }.bind(this)} />;
+    }
+-	그런데 이렇게 하면 나중에 리액트 성능 개선할 때 까다로울 수 잇음: concat이라는 걸 사용하면 더 효율적..
+: 배열에 항목을 추가할 때 push도 쓸 수 있지만 concat도 쓸수 있음. Push를 쓸때는 원본을 바꿔서 새로운 항목이 추가된 새로운 배열을 돌려주지만, concat은 원래 배열은 그대로 두고 새로운 항목이 추가된 새로운 배열을 리턴함 -> State에 값을 추가할때는 Push처럼 오리지널 데이터를 변경하는 함수를 쓰지말고 CONCAT을 쓰는 것이 더 좋다 -> 원본 데이터를 바꾸지 않고 데이터를 state에 갱신함 
+<CreateContent
+          onSubmit={function(_title, _desc) {
+            // state를 통해서 새로운 컨텐츠 값을 추가하기
+            this.max_content_id = this.max_content_id + 1;
+            // this.state.contents.push({id: this.max_content_id, title: _title, desc: _desc});
+            var _contents = this.state.contents.concat({ // concat으로 만들어진 항목이 추가된 새로운 배열을 저장
+              id: this.max_content_id,
+              title: _title,
+              desc: _desc
+            });
+            this.setState({
+              contents: _contents
+            });
+            console.log(_title, _desc);
+          }.bind(this)}
+        />
+
+6-8. Create 구현: ShouldComponentUpdate 소개
