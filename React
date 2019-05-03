@@ -578,7 +578,7 @@ onSubmit={function(e) {
 - 이제 title, description 값을 잘 받아올 수 있게 되었으니 이 것들을 App의 컨텐츠 끝에 추가해주자~
 
 6-7. Create 구현: Content 변경
--	Contents의 끝에 데이터를 추가해야되니까 기존에 있던 데이터의 id값을 쭉 읽어서 1 더 큰 id 값을 만들어야 함 -> 변수로 저장해두자 
+-	Contents의 끝에 데이터를 추가해야되니까 기존에 있던 데이터의 id값을 쭉 읽어서 1 더 큰 id 값을 만들어야 함 -> 변수로 저장해두자 (ui에 영향을 주지는 않으므로 불필요한 렌더링을 피하기 위해 State가 아닌 바깥쪽에 뺌)
 class App extends Component {
   constructor(props) {
     super(props);
@@ -589,7 +589,7 @@ else if (this.state.mode === "create") {
       _article = <CreateContent onSubmit={function(_title, _desc){
         // state를 통해서 새로운 컨텐츠 값을 추가하기
         this.max_content_id = this.max_content_id + 1; // 컨텐츠의 마지막 요소보다 id값 1 더 큼
-        this.state.contents.push(
+        this.state.contents.push( //이런 식으로 state의 값을 직접 수정할수가 없음 -> setState 써야
 {id: this.max_content_id, title: _title, desc: _desc}); // 항목 추가하기
         this.setState({ // 조건문에서만state 변경시 모름.. setState써서 컨텐츠가 수정되었음을 알림 
           contents: this.state.contents
@@ -598,7 +598,7 @@ else if (this.state.mode === "create") {
       }.bind(this)} />;
     }
 -	그런데 이렇게 하면 나중에 리액트 성능 개선할 때 까다로울 수 잇음: concat이라는 걸 사용하면 더 효율적..
-: 배열에 항목을 추가할 때 push도 쓸 수 있지만 concat도 쓸수 있음. Push를 쓸때는 원본을 바꿔서 새로운 항목이 추가된 새로운 배열을 돌려주지만, concat은 원래 배열은 그대로 두고 새로운 항목이 추가된 새로운 배열을 리턴함 -> State에 값을 추가할때는 Push처럼 오리지널 데이터를 변경하는 함수를 쓰지말고 CONCAT을 쓰는 것이 더 좋다 -> 원본 데이터를 바꾸지 않고 데이터를 state에 갱신함 
+: 배열에 항목을 추가할 때 push도 쓸 수 있지만 concat도 쓸수 있음. Push를 쓸 때는 원본을 바꿔서 새로운 항목이 추가된 새로운 배열을 돌려주지만, concat은 원래 배열은 그대로 두고 새로운 항목이 추가된 새로운 배열을 리턴함 -> State에 값을 추가할 때는 Push처럼 오리지널 데이터를 변경하는 함수를 쓰지 말고 CONCAT을 쓰는 것이 더 좋다 -> 원본 데이터를 바꾸지 않고 데이터를 state에 갱신함 
 <CreateContent
           onSubmit={function(_title, _desc) {
             // state를 통해서 새로운 컨텐츠 값을 추가하기
@@ -615,5 +615,213 @@ else if (this.state.mode === "create") {
             console.log(_title, _desc);
           }.bind(this)}
         />
+-	이제 리액트를 이용해서 C, R, U, D 중 create, read 둘 다 할 수 있게 되었다
 
 6-8. Create 구현: ShouldComponentUpdate 소개
+-	setState에 어떤 수정된 값을 줄 때는 원본을 수정하지말고, 원본의 복제본을 수정해서 setState 값으로 주는 것이 좋음.. 왜? 
+-	TOC의 컨텐츠는 바뀐 것이 없는데도 다른 a태그가 추가됨에 따라 다시 렌더링함수가 호출이 됨 -> 불합리. 프로그램 사이즈가 커지면 이슈가 될 수 있음: 리액트는 성능을 향상시키고 싶을 때 컴포넌트의 렌더함수가 실행될지, 않을지를 결정할 수 있도록 특수한 함수를 제공: shouldComponentUpdate() 함수, render 함수 위에 정의하고 Return값 (true / false) 에 따라 render 함수의 실행 여부를 결정할 수 있다: true이면 shouldComponentUpdate 함수 실행 후에 Render함수 실행, False면 render함수 실행되지 않음
+-	ShouldComponentUpdate 함수는 두 개의 매개변수를 갖도록 약속되어 있음: NewProps, newState
+class TOC extends Component {
+  shouldComponentUpdate(newProps, newState) {
+    console.log("===> TOC render shoudComponentUpdate",
+    newProps.data,   // create 버튼을 통해 새로 추가된 데이터
+    this.props.data); // 지금 현재 데이터
+    return true;
+  }
+
+  render() {
+: 만약 newProps 값과 this.props.data값이 다를 때만 true를 리턴한다면? 새로운 데이터가 있을 때만 render 함수 실행되므로 합리적임
+그런데 이때 위에서 concat을 사용하지 않고 Push를 통해 state값을 바꿨다면 이 기능이 제대로 실행되지 않음: 원본 데이터가 바꼈으니까
+class TOC extends Component {
+  shouldComponentUpdate(newProps, newState) {
+    console.log(
+      "===> TOC render shoudComponentUpdate",
+      newProps.data,
+      this.props.data
+    );
+    if (this.props.data === newProps.data) {
+      return false;
+    }
+    return true;
+}
+-	shouldComponentUpdate 함수를 쓸 필요가 없으면 push를 쓰던 concat을 쓰던 그닥 상관이 없겠다
+-	다음 시간엔 원본을 바꾸지 않고 SetState에다가 값을 세팅하는 간단한 방법 살펴볼 것
+
+6-9. Create 구현: Immutable (불변)
+-	“원본을 바꾸지 않는다” => 불변성이라고 함, Immutable 
+Var a = [1, 2];
+Var b = Array.from(a);  // a와 같은 데이터를 가지고 있는 새로운 배열이 만들어 짐 
+Console.log(a, b, a === b);  -> [1, 2], [1, 2], false // a와 b는 내용만 같을 뿐 다른 배열 -> concat을 쓰지 않고 새로운 정보가 추가된 contents의 배열을 복제한 후 push를 통해 state값을 변경하는 방법
+<CreateContent
+          onSubmit={function(_title, _desc) {
+    this.max_content_id = this.max_content_id + 1;
+ 		// var _contents = this.state.contents.concat({ 
+              id: this.max_content_id,
+              title: _title,
+              desc: _desc //
+		var newContents = Array.from(this.state.contents);
+		newContents.push({id: this.max_content_id,
+              title: _title,
+              desc: _desc})
+            });
+            this.setState({
+              contents: newContents
+		});
+-	Array.from(): 배열만 가능
+-	객체는 “Object.assign({ }, 복사할 객체 이름)”를 통해 복사할 수 있음: 첫 번째 인자로 빈 객체로 주고 두번째 인자로 복사할 객체
+Var a = {name : ‘egoing’};
+Var b = Object.assign({ }, a));
+Console.log(a, b, a === b);  -> {name: “egoing”}, {name: “egoing”}, false
+-	만약 var b = Object.assign({left: 1, right: 2}, a); -> {left: 1, right: 2, name: ‘egoing’} 처럼 복사된 객체의 정보가 마지막에 추가되어서 나옴
+-	Immutable JS와 같은 라이브러리에서는 모든 명령어가 원본에 대해서 Immutable: 원본의 값은 그대로이고 복사본의 값의 변경
+
+7.	Update 기능 구현: 웹 앱의 수정 기능을 React로 구현해보기
+-	업데이트 기능은 Read, Create 기능이 결합되어있음: CreateContent에 이미 있는 form재사용 -> 새로 UpdateContent라는 파일 생성 후 코드 복사, App.js파일에 import, 모드가 Update로 바뀔때 실행될 코드 조건문 추가
+-	이제 App.js 파일의 render함수가 너무 길어짐.. -> <article>코드를 만들어주는 코드들을 .getContent() 함수로 모아넣고 _article 시켜주기 -> {_article}을 {this.getContent()}로 변경
+-	Updatecontent가 실행될 때 입력값으로, 현재 선택된 컨텐트에 해당되는 컨텐트를 업데이트 컨텐트에 주입시켜줘야함
+: Contents에서 selected content와 같은 id값을 찾아서 알맞는 컨텐트가져오기 -> getReadContent() 라는 새로운 함수 만들기
+Read모드에서 실행되었던 반복문 코드를 빼서 GetReadContent함수에 넣고 data를 리턴시켜줌 
+getReadContent() {
+    var i = 0;
+      while (i < this.state.contents.length) {
+        var data = this.state.contents[i]; 
+        if (data.id === this.state.selected_content_id) {
+          return data;
+          break;
+        }
+        i = i + 1;
+      }
+  }
+  getContent(){
+    var _title,
+      _desc,
+      _article = null; //기본적으로 없는 값
+    if (this.state.mode === "welcome") {
+      _title = this.state.welcome.title;
+      _desc = this.state.welcome.desc;
+      _article = <ReadContent title={_title} desc={_desc} />; //이 영역을 가변적으로 만들기 위해 변수로 만들어 저장
+    } else if (this.state.mode === "read") {
+      var _content = this.getReadContent();
+      _article = <ReadContent title={_content.title} desc={_content.desc} />;     }
+
+-	업데이트 모드일때 업데이트를 시킬 데이터를 위에서 만든 getReadContent 함수를 통해 가져 오고 그 데이터를 updateContent의 data로 주입시킴 
+-	else if (this.state.mode === "update") {
+-	      _content = this.getReadContent();
+-	      _article = (
+-	        <UpdateContent data={_content} // 업데이트할 컨텐트를 선택한 후  id 값에 맞는 컨텐트를 GetReadContent함수로 가져온 것을 data로 주입시킴
+-	          onSubmit={function(_title, _desc) {
+
+7-2. Update 구현: form 
+-	UpdateContent 컴포넌트로 주입된 data를 기반으로 해서 컴포넌트에 기본적으로 입력되는 값을 제어
+-	공식문서: forms 참고
+-	업데이트 컨텐트에 있는 form에 title의 value 값을 {this.props.data.title}로 하면 리액트에서 에러가남: 
+Props의 값을 우리가 변경할 수 없고 “onChange” 함수를 쓰라고 뜸 (props의 데이터는 read-only이므로 이대로 수정 불가)
+:Value값을 우리가 값을 바꿔줄 수 잇게 state화시킨 후 value={this.state.title}
+class UpdateContent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      title: this.props.data.title,
+	desc: this.props.data.desc
+    }
+  }
+
+-	여전히 수정이 안 됨: Input의 value를 바꿨지만 이것이 state값이 바뀌지는 않으므로.. -> onChange 함수써서 Input값이 바꼈을 때 state값도 바뀌게 만들어줌 
+
+<input
+              type="text"
+              name="title"
+              placeholder="title"
+              value={this.state.title} // props의 데이터는 read-only이므로 수정 불가:State 씀
+              onChange={function(e) {
+                console.log(e.target.value);
+                this.setState({title:e.target.value}); // 한 글자씩 바뀔 때마다 state에 동기화시키기 
+              }.bind(this)}
+            />
+
+-	똑같이 textarea도 state화시키고 value가져오게 한 후 onchange함수 등록
+-	TEXtarea의 내용을 쓸때 텍스트아리아 태그 사이에 넣는것이 아니라 value값으로 넣어줘야함
+<textarea
+              name="desc"
+              placeholder="description"
+              value={this.state.desc}
+              onChange={function(e) {
+                console.log(e.target.value);
+                this.setState({ desc: e.target.value }); 
+              }.bind(this)}
+            />
+-	OnChange함수가 중복되서 쓰이는게 싫다.. 이런 기능을 하는 함수를 따로 만들자: inputFormHandler()
+inputFormHandelr(e){
+    this.setState({[e.target.name]: e.target.value });  // 증괄호 사용해서 이벤트가 일어난 타겟 가져오기  
+  }
+
+<input
+              type="text"
+              name="title"
+              placeholder="title"
+              value={this.state.title} // props의 데이터는 read-only이므로 이대로 수정 불가
+              onChange={this.inputFormHandelr.bind(this)}
+            />
+-	InputFormHandler 쓰일 때마다 뒤에 bind(this) 붙어 있는거 보기 싫으니까 constructor에서 초기화 해준 후 코드 뒤에 붙어있는 bind(this) 떼주기
+this.inputFormHandelr = this.inputFormHandelr.bind(this);
+
+7-3. Update 구현: state 변경
+-	이제 들어온 데이터를 State로 만들고 그 값을 Form과 동기화해서 state값을 변경시키는 것을 했음, 그런데 어디를 업데이트 해야할지 식별자가 필요함! 
+-	Form에서 ID는 사용자한테 보일 필요가 없기때문에 type을 hidden으로 씀: 안 보이지만 자바스크립트가 동작하지 않을 때도 이 기능이 동작하게 하려는 거기 때문에 기능 구현에 충실하기 위해서.. 
+<input type="hidden" name="id" value={this.state.id}></input>   // 존재하지만 눈에 보이지는 않음
+-	UpdateContent에서 onSubmit 버튼이 눌릴 때 이 id값도 부여하게 하기 
+<form
+          action="/create_process" // 이건 지금 이해하지 말고 넘어가자
+          method="post"
+          onSubmit={function(e) {
+            e.preventDefault();
+            this.props.onSubmit(
+              this.state.id,
+              this.state.title, this.state.desc);
+          }.bind(this)}
+-	App.js, 업데이트 모드에서 이전에 복사해놓은 코드에서는 업데이트시 새로운 요소가 생성되는 코드가 복사되었으므로 필요없는 코드 삭제 및 변경: max_content_id 삭제, concat코드를 array 복제본 만들어서 수정하고자 하는 것과 같은 원소 바꾼 후 컨텐츠 변경하는 것으로 바꿈
+
+} else if (this.state.mode === "update") {
+      _content = this.getReadContent();
+      _article = (
+        <UpdateContent
+          data={_content} 
+          onSubmit={function(_id, _title, _desc) {
+            var _contents = Array.from(this.state.contents);// 원본을 바꾸지 않음으로써 추후 성능개선에 효율적
+            //contents값 하나씩 봐서 id값이 수정하고자 하는 것과 같은 원소 찾기
+            var i = 0;
+            while (i < _contents.length) {
+              if (_contents[i].id === _id) {
+                _contents[i] = { id: _id, title: _title, desc: _desc }; // 새로 입력받은 내용으로 바꾸기 
+                break;
+              }
+              i = i + 1;
+            }
+            this.setState({
+              contents: _contents,
+		mode: ‘read’. // 컨텐츠 수정 후 상세보기 할 수 있도록 모드 바꾸기 
+            });
+-	CreateContent에서도 Concat을 썼던 코드를 새로운 복사본을 만들어서 그 복사본을 수정하는 것으로 코드 변경
+_article = (
+        <CreateContent
+          onSubmit={function(_title, _desc) {
+            // state를 통해서 새로운 컨텐츠 값을 추가하기
+            this.max_content_id = this.max_content_id + 1;
+            // this.state.contents.push({id: this.max_content_id, title: _title, desc: _desc});
+            var _contents = Array.from(this.state.contents);
+            _contents.push({
+              id: this.max_content_id,
+              title: _title,
+              desc: _desc
+            })
+            this.setState({
+              contents: _contents,
+		mode: ‘read’
+		selected_content_id: {this.max_content_id}
+            });
+          }.bind(this)}
+        />
+      );
+-	이제 컨텐트를 업데이트하고 수정, 업데이트 후 바뀐 것으로 ‘상세보기’ 하려면 모드를 read로 바꿔주면 됨: Update, create 둘 다: 위의 예 코드 추가
+-	Create에서 selected_content_id (read모드에서 클릭된 링크의 id값):: {this.max_content_id} // 방금 우리가 추가한 값으로 바꿈
+
