@@ -740,7 +740,7 @@ class UpdateContent extends Component {
             />
 
 -	똑같이 textarea도 state화시키고 value가져오게 한 후 onchange함수 등록
--	TEXtarea의 내용을 쓸때 텍스트아리아 태그 사이에 넣는것이 아니라 value값으로 넣어줘야함
+-	Textarea의 내용을 쓸 때 자바스크립트처럼 <textarea> 태그 사이에 넣는 것이 아니라 value값으로 넣어줘야함
 <textarea
               name="desc"
               placeholder="description"
@@ -752,7 +752,7 @@ class UpdateContent extends Component {
             />
 -	OnChange함수가 중복되서 쓰이는게 싫다.. 이런 기능을 하는 함수를 따로 만들자: inputFormHandler()
 inputFormHandelr(e){
-    this.setState({[e.target.name]: e.target.value });  // 증괄호 사용해서 이벤트가 일어난 타겟 가져오기  
+    this.setState({[e.target.name]: e.target.value });  // 중괄호 사용해서 이벤트가 일어난 타겟 가져오기  
   }
 
 <input
@@ -767,7 +767,7 @@ this.inputFormHandelr = this.inputFormHandelr.bind(this);
 
 7-3. Update 구현: state 변경
 -	이제 들어온 데이터를 State로 만들고 그 값을 Form과 동기화해서 state값을 변경시키는 것을 했음, 그런데 어디를 업데이트 해야할지 식별자가 필요함! 
--	Form에서 ID는 사용자한테 보일 필요가 없기때문에 type을 hidden으로 씀: 안 보이지만 자바스크립트가 동작하지 않을 때도 이 기능이 동작하게 하려는 거기 때문에 기능 구현에 충실하기 위해서.. 
+-	Form에서 ID는 사용자한테 보일 필요가 없기때문에 type을 hidden으로 씀: 안 보이지만 자바스크립트가 동작하지 않을 때도 이 기능이 동작하게 하려는 거기 때문에 기능 구현에 충실하기 위해서.. (이해 안 감..)
 <input type="hidden" name="id" value={this.state.id}></input>   // 존재하지만 눈에 보이지는 않음
 -	UpdateContent에서 onSubmit 버튼이 눌릴 때 이 id값도 부여하게 하기 
 <form
@@ -804,7 +804,7 @@ this.inputFormHandelr = this.inputFormHandelr.bind(this);
 -	CreateContent에서도 Concat을 썼던 코드를 새로운 복사본을 만들어서 그 복사본을 수정하는 것으로 코드 변경
 _article = (
         <CreateContent
-          onSubmit={function(_title, _desc) {
+          onSubmit={function(_id, _title, _desc) {
             // state를 통해서 새로운 컨텐츠 값을 추가하기
             this.max_content_id = this.max_content_id + 1;
             // this.state.contents.push({id: this.max_content_id, title: _title, desc: _desc});
@@ -825,3 +825,47 @@ _article = (
 -	이제 컨텐트를 업데이트하고 수정, 업데이트 후 바뀐 것으로 ‘상세보기’ 하려면 모드를 read로 바꿔주면 됨: Update, create 둘 다: 위의 예 코드 추가
 -	Create에서 selected_content_id (read모드에서 클릭된 링크의 id값):: {this.max_content_id} // 방금 우리가 추가한 값으로 바꿈
 
+7-4. Delete 구현
+-	App의 state 모드를 ‘welcome’으로 변경 -> css 클릭하면 Seleted_content_id 값은 2 -> 이 상태에서 delete버튼을 누르면 이 항목을 삭제해줘야함
+-	Control 안에 delete버튼이 있고 이 버튼은 onchangemode라는 Props를 호출하고 있음 – App.js <Control> props인 onchangemode에서 매개변수인 _mode의 값이 delete일때 항목을 삭제, 아니면 페이지 전환만 해주면 됨: 조건문 추가
+<Control
+          onChangeMode={function(_mode) {
+            if (_mode === "delete") {
+              //삭제가 시작되면 정말 삭제할 건지 확인하게 하기
+              if (window.confirm("really?")) { // 경고창 안에 문구 넣기
+                //컨펌 경고창은 window를 붙여줘야함
+                //확인을 누르면 true가 되어 다음 코드 실행됨
+                var _contents = Array.from(this.state.contents);
+                var i = 0;
+                while (i < _contents.length) {
+                  if (_contents[i].id === this.state.selected_content_id) { 
+                    _contents.splice(i, 1); // 발견한 id의 값부터 하나만 지움
+                    break;
+                  }
+                  i = i + 1;
+                }
+                this.setState({
+                  mode: "welcome", // 삭제한 후에는 메인페이지로 이동
+                  contents: _contents
+                });
+                alert("deleted!"); // 삭제 완료 후 알림창 띄우기
+              }
+            } else {
+              // delete모드가 아니면 페이지 전환만 해줌
+              this.setState({
+                mode: _mode
+              });
+            }
+          }.bind(this)}
+        />
+
+8.	수업을 마치며 
+-	배운 걸 충분히 써먹고 내 걸로 만들기
+-	궁금해할 만한 주제: 
+1)	Immutable: 구현을 단순하게 유지해서 높은 복잡성에 도전하기 위한 노력. 가변적인것은 나쁜 게 아니지만 너무 변경이 쉬울 경우 종종 대혼란을 가져올 수 있음, 특히 고도로 애플리케이션이 복잡해지면서 의도하지 않은 값의 변경은 난감한 이슈를 불러올 수 있음
+: 객체를 immutable하게 다루기 위한 여러 라이브러리가 있음: immutable.js( 모든 연산이 원본을 변경하지 않음)
+2)	Router: 우리의 웹 애플리케이션은 하나의 url롤 모든 페이지를 다루고 있음. 페이지 전환을 할 때마다 네트워크 로딩을 하지 않는 것은 장점이지만, url만으로 페이지로 찾아올 수 없다는 것은 단점: react router을 사용하면 URl에 따라 적당한 컴포넌트가 실행되도록 할 수 있음
+3)	Create-react-app을 통해서 앱을 만들기엔 기능이 부족할 수 있는데 Npm run eject를 실행하면 감춰진 여러 설정을 수정하는 것이 가능함, 단 한번 eject하면 다시 돌아갈 수 없음
+4)	Redux: 리액트에 컴포넌트가 많아지면 컴포넌트간 교류가 어려워짐, 부모가 자식으로 데이터를 전달할 때는 PROPS를, 자식이 부모를 찾으려고 할 때는 이벤트를 버블링 시켜야 함 -> Redux를 쓰면 중앙에 데이터저장소를 두고 이것을 사용하여 한번에 그 곳에 저장된 모든 관련 데이터를 변경 가능  
+5)	React server side rendering: 서버 쪽에서 웹페이지를 완성한 후에 클라이언트에 완성된 HTMl을 전송하는 것으로 애플리케이션을 구동할 수 있음: 초기 구동 시간을 단축할 수 있으면서도 자바스크립트 특유의 로딩이 필요 없는 애플리케이션의 특성을 유지할 수 있음, 또한 검색 엔진과 같은 로봇들이 HTML코드를 읽을 수 있음 
+6)	React native: 네이티브앱을 만들 수 있음. 하나의 코드로 거의 모든 플랫폼에서 동작하는 애플리케이션을 만들 수 있음 
