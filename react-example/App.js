@@ -11,7 +11,7 @@ class App extends Component {
     super(props);
     this.max_content_id = 3; // contents 마지막 요소 id값 저장해두기
     this.state = {
-      mode: "create",
+      mode: "welcome",
       selected_content_id: 2,
       subject: { title: "WEB", sub: "World Wide Web" },
       welcome: { title: "Welcome", desc: "Hello, React!!" },
@@ -56,11 +56,11 @@ class App extends Component {
               id: this.max_content_id,
               title: _title,
               desc: _desc
-            })
+            });
             this.setState({
               contents: _contents,
-             mode: 'read',
-             selected_content_id: this.max_content_id //방금 우리가 추가한 값으로 변경
+              mode: "read",
+              selected_content_id: this.max_content_id //방금 우리가 추가한 값으로 변경
             });
           }.bind(this)}
         />
@@ -69,7 +69,7 @@ class App extends Component {
       _content = this.getReadContent();
       _article = (
         <UpdateContent
-          data={_content} 
+          data={_content}
           onSubmit={function(_id, _title, _desc) {
             var _contents = Array.from(this.state.contents);
             //contents값 하나씩 봐서 id값이 수정하고자 하는 것과 같은 원소 찾기
@@ -83,7 +83,7 @@ class App extends Component {
             }
             this.setState({
               contents: _contents,
-              mode: 'read'
+              mode: "read"
             });
             console.log(_title, _desc);
           }.bind(this)}
@@ -114,10 +114,32 @@ class App extends Component {
         />
         <Control
           onChangeMode={function(_mode) {
-            console.log(this.state.mode);
-            this.setState({
-              mode: _mode
-            });
+            if (_mode === "delete") {
+              //삭제가 시작되면 정말 삭제할건지 확인하게 하기
+              if (window.confirm("really?")) { // 경고창 안에 문구 넣기
+                //컨펌 경고창은 window를 붙여줘야함
+                //확인을 누르면 true가 되어 다음 코드 실행됨
+                var _contents = Array.from(this.state.contents);
+                var i = 0;
+                while (i < _contents.length) {
+                  if (_contents[i].id === this.state.selected_content_id) {
+                    _contents.splice(i, 1); // 발견한 id의 값부터 하나만 지움
+                    break;
+                  }
+                  i = i + 1;
+                }
+                this.setState({
+                  mode: "welcome", // 삭제한 후에는 메인페이지로 이동
+                  contents: _contents
+                });
+                alert("deleted!"); // 삭제 완료 후 알림창 띄우기
+              }
+            } else {
+              // delete모드가 아니면 페이지 전환만 해줌
+              this.setState({
+                mode: _mode
+              });
+            }
           }.bind(this)}
         />
         {this.getContent()}
