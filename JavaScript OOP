@@ -44,7 +44,11 @@ while ( i < memberArray.length) {
 	console.log(i, memberArray[i]);
 	i += 1;
 } 
-console.groupEnd('array loop'); -> 0 “egoing”, 1 “graphittie”, 2 “leezhce”
+console.groupEnd('array loop'); 
+->array loop 
+0 “egoing”
+1 “graphittie”
+2 “leezhce”
 
 var memberObject = {
 	manager: 'egoing',
@@ -58,3 +62,148 @@ for (var i in memberObject) {
 }
 console.groupEnd('object loop');  -> manager, developer, designer 키의 값이 나옴
 : 원소의 값을 가져올 때는 memberObject[i] -> ‘egoing’, ‘graphittie”, ‘leezhce”
+
+3.	객체의 사용 사례
+3-1. 객체는 언제 쓰나?
+-	Built-in객체의 예: Math.PI -> 파이값, Math.random() -> 임의의 수를 가져오는 함수, Math.floor(3.9) -> 3. 내림을 해주는 함수 
+-	수학적인 것과 관련된 것을 “Math”라는 이름의 객체에 변수, 메소드로 저장한 것
+-	우리가 객체를 따로 만들지 않아도 우리는 이때까지 이미 만들어진 객체를 사용해왔었음 
+
+3-2. 객체만들어보기
+-	MyMath라고 하는 객체 만들어보기
+
+var MyMath = {
+    PI:Math.PI,
+    random:function(){
+        return Math.random();
+    },
+    floor:function(val){
+        return Math.floor(val);
+    }
+}
+console.log("MyMath.PI", MyMath.PI);
+console.log("MyMath.random()", MyMath.random());
+console.log("MyMath.floor(3.9)", MyMath.floor(3.9));
+-	객체를 안 써도 되지만 추후에 조금 더 불편해질 뿐. 디렉토리를 만들고 그 안에 연관된 파일을 넣으면 나중에 중복되서 이름을 쓸 가능성이 낮고 코드도 훨씬 더 깔끔해짐
+
+4.	This: 메소드 내에서 메소드가 속한 객체를 참조할 때 사용하는 키워드
+-	프로그래밍에서 자기 자신을 가리키는 표현
+var kim = {
+	name: 'kim',
+	first: 10,
+	second: 20,
+	sum: function(f, s) {
+		return f + s;
+	}
+}
+
+console.log('kim.sum(kim.first, kim.second)', kim.sum(kim.first, kim.second)); -> 
+kim.sum(kim.first, kim.second) 30 
+-	기능적으로는 아무 문제가 없지만, kim 객체의 메소드를 쓰면서 인자로 다시 객체의 이름을 활용해서 인자를 넘겨주는것은 비효율적임: 메소드가 자신이 속해있는 객체를 가리킬 때 “this”를 사용
+var kim = {
+	name: 'kim',
+	first: 10,
+	second: 20,
+	sum: function() {
+		return this.first + this.second;
+	}
+}
+console.log('kim.sum(kim.first, kim.second)', kim.sum()); -> kim.sum(kim.first, kim.second) 30 
+-	This덕분에 객체가 내부적으로 가지고 있는 상태를 함수에서 참조할 수 있음
+
+5.	객체 공장
+5-1. 
+-	객체를 자동으로 찍어내는 공장 constructor을 만들어보자
+-	위의 예를 활용해서 똑같은 포맷을 가진 다른 객체 “lee”를 생성
+var kim = {
+	name: 'kim',
+	first: 10,
+	second: 20,
+	sum: function() {
+		return this.first + this.second;
+	}
+}
+
+var lee= {
+	name: 'kim',
+	first: 10,
+	second: 10,
+	sum: function() {
+		return this.first + this.second;
+	}
+}
+
+console.log('kim.sum()', kim.sum()); -> kim.sum() 30
+console.log('lee.sum()', lee.sum()); -> lee.sum() 20
+
+-	객체에 ‘third’라는 변수를 추가할 경우 kim, lee 등 모든 해당 객체의 값을 바꿔줘야 함.. -> 같은 형식의 객체를 만들어내는 공장을 만들어보자
+
+5-2. 내장된 객체를 통해서 객체 공장의 쓰임 체험해보기
+-	시간을 알아내고 싶을 때 사용하는 date객체 써보기
+var d1 = new Date('2019-4-10'); -> 현재 날짜를 가진 새로운 객체 ‘d1’ 생성 
+console.log('d1.getFullYear()', d1.getFullYear()); -> d1.getFullYear() 2019만들어진 d1객체를 사용하여 데이터 참조하기
+console.log('d1.getMonth()', d1.getMonth()); -> d1.getMonth() 3
+-	‘Date는 어떤 형식에 따라 객체를 리턴해줌. Date라는 객체 공장을 바꿀 경우 그 공장에서 나오는 모든 객체를 한꺼번에 변경할 수 있음 
+
+5-3. 객체 공장 이용해보기 
+-	‘Date’ 는 내장함수임 -> 우리도 위의 포맷으로 객체를 만들어주는 함수를 만들어보자
+function Person(){
+	this.name= 'kim',
+	this.first= 10,
+	this.second= 20,
+	this.third= 30,
+	this.sum= function() {
+		return this.first + this.second + this.third;
+	}
+}
+console.log('Person()', Person()); -> Person() undefined 
+console.log('new Person()', new Person());  -> new Person() Person {name: "kim", first: 10, second: 20, third: 30, sum: ƒ}
+-	New를 붙이고 우리가 만든 함수를 만들면 그 함수는 생성자가 됨(constructor, 생성자 함수)
+-	New Person()을 활용해서 kim, lee 두 객체 만들기
+var kim = new Person();   console.log('kim.sum()', kim.sum()); -> kim.sum() 60
+var lee = new Person();   console.log('lee..sum()', lee.sum()); -> > lee..sum() 60
+-	생성자함수가 입력될 때 입력값을 주기
+var kim = new Person(‘kim’, 10, 20, 30); 
+var lee = new Person(‘lee’, 10, 10, 10);
+
+-	Person 생성자에서 함수의 인자로 들어온 값을 처리할 수 있도록 정의
+function Person(name, first, second, third) {
+	this.name= name,
+	this.first= first,
+	this.second= second,
+	this.third= third,
+	this.sum= function() {
+		return this.first + this.second + this.third;
+	}
+}
+var kim = new Person(‘kim’, 10, 20, 30); console.log('kim.sum()', kim.sum()); -> kim.sum() 60
+var lee = new Person(‘lee’, 10, 10, 10); console.log('lee..sum()', lee.sum()); -> > lee..sum() 30
+-	생성자 함수를 이용하면 같은 형식의 객체를 만들 때 하나하나 변수를 지정해줄 필요 없으며, 생성자 함수에서 값을 변경함에 따라 생성자 함수를 통해 만들어진 모든 객체가 한번에 바뀜
+
+6.	Prototype: 코드의 재사용성과 성능을 향상
+6-1. prototype이 필요한 이유
+-	Prototype은 자바스크립트가 prototype based language라 부르기도 할만큼 큰 기반임
+-	위의 예에서 kim, lee객체를 생성할때 Person생성자를 사용했었음. 그런데 person생성자에서 sum함수는 생성자가 실행이 될 때마다 불필요하게 다시 만들어짐 -> 시간, 메모리 낭비
+-	생성자 안에 메소드를 만들 경우, 객체가 만들어진 이 후에 메소드 수정이 필요할 때 각각의 객체마다 값을 변경해줘야 함 
+-	Person생성자를 이용해서 만들어진 모든 객체가 공통적으로 사용할 함수, 속성을 만들면 좋겟다
+
+6-2. prototype을 이용해서 코드의 재사용성을 높이고 성능을 향상
+-	객체가 공통적으로 사용할 속성을 만드는 방법
+-	생성자 함수에 존재하던 메소드 부분을 바깥으로 빼내어 Prototype으로 정의해 줌
+function Person(name, first, second, third){
+    this.name=name;
+    this.first=first;
+    this.second=second;   
+}
+
+Person.prototype.sum = function(){
+    return 'prototype : '+(this.first+this.second);
+}
+-	이제 생성자함수가 실행될 때마다 sum함수가 실행되지 않음. 한번만 정의됨 
+-	그리고 prototype으로 정의된 sum함수의 리턴값을 바꾸면 모든 객체의 값이 동시에 바뀜
+-	많은 객체 중 특정 한 객체의 sum메소드를 변경시키고 싶을 경우
+Kim.sum = function () {
+	Return ‘this : ‘ + (this.first + this.second); -> kim.sum() this : 30
+}
+-	속성(변수)들은 생성자 안에 넣고, 그리고 함수들은 생성자.prototype.함수이름으로 쓰는 것이 일반적
+
