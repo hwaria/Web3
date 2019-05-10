@@ -207,3 +207,164 @@ Kim.sum = function () {
 }
 -	속성(변수)들은 생성자 안에 넣고, 그리고 함수들은 생성자.prototype.함수이름으로 쓰는 것이 일반적
 
+7.	Class: JavaScript ES6부터 포함됨
+7-1. 클래스 문법에 대한 오리엔테이션
+-	자바, 파이썬 등에서는 객체를 만드는 공장으로서 class를 사용
+-	자바스크립트에서는 constructor function으로 객체를 사용했었음
+-	Constructor function으로 이미 구현되어있는 기능에 추가하여 class를 사용
+-	인터넷익스플로러 6, 10, 11(제일 최신)버전에서는 ES6 클래스를 지원하지 않음
+-	91.27%의 웹브라우저에서 클래스 지원
+-	“Babeljs.io” 컴파일러: 우리가 짠 코드를 옛날부터 쓰던 코드로 변환 가능함 
+
+7-2. 클래스를 생성하고, 객체를 만드는 방법
+-	위에서 생성한 prototype.js의 객체를, 클래스를 사용해서 똑같이 동작하는 객체 만들어보기
+-	Prototype.js에서 Person이라고 하는 함수는 new와 함께 쓰엿을때 객체를 생성해주는 생성자로 역할
+-	Constructor의 역할 하나. 객체를 만든다 둘. 객체의 초기상태를 세팅함. 클래스에서는 어떻게 할까?
+-	클래스로 객체 생성하기
+class Person {
+}
+var kim = new Person();
+
+8.	Class constructor
+-	자바스크립트의 클래스에서 생성자 함수를 구현하는 방법
+-	클래스에서 메소드를 만들 때는 function이라는 키워드를 쓰지 않고 바로 함수 정의
+-	객체의 초기 상태를 지정할 때 constructor라는 함수를 통해 세팅 
+class Person {
+	constuctor(name, first, second) {
+		this.name = name;
+		this.first = first;
+		this.second = second;
+	}
+}
+var kim = new Person('kim', 10, 20);
+console.log('kim', kim); -> kim Person {name: ‘kim’, first: 10, second: 20}
+-	객체가 생성될 때, 자동으로 생성되기전에 실행되도록 약속되어잇는 constuctor함수 구현해보았다
+
+9.	Class에서 객체의 Method 구현하기
+-	Class를 통해서 객체를 생성할 때 모든 객체가 공유하는 공통(prototype)의 객체를 생성하는 방법
+-	전통적인 방법에서는 constuctor함수의 prototype으로 메소드를 정의했었음
+class Person{
+    constructor(name, first, second){
+        this.name = name;
+        this.first = first;
+        this.second = second;
+    }
+    sum(){
+        return 'prototype : '+(this.first+this.second);
+    }
+}
+var kim = new Person('kim', 10, 20);
+kim.sum = function(){
+    return 'this : '+(this.first+this.second);
+}
+var lee = new Person('lee', 10, 10);
+console.log("kim.sum()", kim.sum()); -> kim.sum() this: 30
+console.log("lee.sum()", lee.sum()); -> lee sum() prototype: 20
+
+10.	Class  상속
+-	Javascript에서 클래스를 상속해서 서브 클래스를 만드는 방법
+-	상속이 왜 필요한가? 위의 코드에서 메소드를 추가하고 싶을때 클래스를 복제해서 새로운 기능을 추가하면 코드의 중복을 없애면서 변경이 필요할 때도 클래스와, 자식(서브)클래스에 동시적으로 적용할 수 있어 유지보수가 쉬워짐 
+class PersonPlus extends Person{ // Person의 모든 속성들을 그대로 쓸 수 있으면서 새로운 메소드 추가
+	avg() {
+		return (this.first+this.second) / 2; 
+	}
+}
+
+Var kim = new PersonPlus(‘kim’, 10, 20);
+Kim.avg() -> 
+
+11.	Super
+-	서브(자식)클래스에서 상위 클래스를 호출할 때 사용하는 키워드 
+: 자녀의 class 생성자에 Property를 추가하고 싶으면 부모 class에서 상속받은 부분은 super()로 써주고, 추가하고 싶은 프로퍼티를 추가로 써줌, 또한 부모class의 메소드를 super.메소드명()로 쓰고 추가하고 싶은 기능을 써주면 됨
+class Person {
+	constructor(name, first, second) {
+		this.name = name;
+		this.first = first;
+		this.second = second;
+	}
+	sum() {
+		return this.first + this.second;
+	}
+}
+
+class PersonPlus extends Person{
+	constructor (name, first, second, third) {
+		super(name, first, second); // 부모의 프로퍼티를 불러옴. “Super()” -> 부모클래스의 생성자 호출 
+		this.third = third;
+	}
+	sum() {
+		return super.sum() + this.third; 부모클래스의 메소드를 호출하여 리턴된 값에 새로운 기능 추가
+	}
+	avg() {
+			return (this.first+this.second+this.third) / 3; 
+	}
+	
+}
+
+
+var kim = new PersonPlus('kim', 10, 20, 30);
+console.log('kim.sum()', kim.sum());
+console.log('kim.avg()', kim.avg());
+-	부모 클래스를 기반으로 새로운 기능을 추가 구현한 자식 클래스를 상속받아 만들었을 때, 
+super()를 통해 부모 클래스의 constructor를 호출하여 부모 클래스 초기 셋팅값을 사용할 수 있고, 
+super.[메소드 이름] 을 통해 부모의 메소드를 호출하여 자식 클래스의 메소드와 콜라보를 할 수 있다. 
+결국 기본적인 기능이 구현된 부모 클래스를 확장하여 사용자에게 필요한 기능을 추가한 자식 클래스를 사용하는데, 코드의 중복없이 재사용성이 좋은 코드를 만들 수 있어 사용자의 편의를 증대시키고 유지보수가 편해짐
+
+12.	객체 간의 상속
+12-1. 소개
+-	객체지향 프로그래밍은 크게 두가지로 나눠짐
+1)	객체를 만들어내는 공장: 클래스
+2)	클래스를 통해서 만들어진 구체적인 객체
+이 두가지가 어떻게 상호작용하냐에 따라 다양한 형태의 객체제어언어들이 만들어짐
+-	주류 객체지향언어(자바 등)에서 자식클래스가 부모클래스의 기능을 물려받은 후 객체 생성: 객체의 기능은 클래스에서 정해지고 다른 객체의 상속을 받을 수 없음  
+-	이 반면에 자바스크립트는 객체의 상속이 더 자유로움: 슈퍼 객체의 기능을 상속받으면서 추가적인 기능을 결합한 서브 객체를 생성. 객체간 직접적으로 상속이 가능하고 객체의 상속관계를 다른 객체로 바꿀 수도 있음 (prototype link를 통해) 
+
+12-2. __proto__를 이용해서 상속을 구현하는 방법
+-	객체간의 상속
+var superObj = {superVal: 'super'}
+var subObj = {subVal: 'sub'}
+subObj.__proto__ = superObj; //subOjb는 superOjb의 자식임을 알려주는 링크
+console.log('subObj.subVal =>', subObj.subVal); -> subObj.subVal => sub
+console.log('subObj.superVal =>', subObj.superVal); -> subObj.superVal => super
+-	Prototype (과 __proto__를 헷갈리면 안 됨.. 
+-	자식객체에서 상속받은 부모속성의 값을 변경한다고 해도 부모객체의 값은 바뀌지 않음 
+subObj.superVal = 'sub';
+console.log('superObj.superVal =>', superObj.superVal); -> ‘Super’
+-	정석의 상속 방법은 아님
+12-3. Object.create를 이용해서 __proto__를 대체하는 방법 
+var subObj = {subVal: 'sub'}
+subObj.__proto__ = superObj;
+-	위 두 줄의 코드를 표준화된 상속방법으로 바꾸기: 더 좋은 방법
+Var subObj = Object.create(superObj);
+subObj.subVal = ‘sub’;
+
+12-4. 기존의 예제 상속으로 구현하기
+-	아직 우리는 컨스트럭터 function을 통해 상속하는 방법은 안 배웠고 우리가 만든 객체를 상속하는 법만 배움
+var kim = {
+	name: 'kim',
+	first: 10, second: 20,
+	sum:function( ){
+		return this.first + this.second
+	}
+}
+var lee = {
+	name: 'lee',
+	first: 10, second: 10,
+	avg: function ( ) {. // 새로운 메소드를 따로 추가 
+		return (this.first + this.second) / 2;
+	}
+}
+lee.__proto__ = kim; // 객체 상속받기 
+console.log('kim.sum(): ', kim.sum()); -> 30
+console.log('lee.sum(): ', lee.sum()); -> 20
+console.log('lee.avg(): ', lee.avg()); -> 10
+
+-	표준화 상속법을 통해 객체 상속
+var lee = Object.create(kim);
+lee.name = 'lee';
+lee.first = 10;
+lee.second = 10;
+lee.avg = function(){
+    return (this.first+this.second)/2;
+}
+
